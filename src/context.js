@@ -11,9 +11,11 @@ class ProductProvider extends Component {
     cart: [],
     modalOpen: false,
     modalProduct: detailProduct,
+    formProduct: detailProduct,
     cartSubTotal: 0,
     cartTax: 0,
     cartTotal: 0
+    // showForm: false
   };
   componentDidMount() {
     this.setProducts();
@@ -65,6 +67,12 @@ class ProductProvider extends Component {
       return { modalProduct: product, modalOpen: true };
     });
   };
+  // showForm = () => {
+  //   //const product = this.getItem(id);
+  //   this.setState(() => {
+  //     return { showForm: true };
+  //   });
+  // };
   closeModal = () => {
     this.setState(() => {
       return { modalOpen: false };
@@ -160,6 +168,7 @@ class ProductProvider extends Component {
       };
     });
   };
+  payNow = () => {};
   render() {
     return (
       <ProductContext.Provider
@@ -173,6 +182,7 @@ class ProductProvider extends Component {
           decrement: this.decrement,
           removeItem: this.removeItem,
           clearCart: this.clearCart
+          // showForm: this.showForm
         }}
       >
         {/* <button onClick={this.tester}>test me</button> */}
