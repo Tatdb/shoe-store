@@ -2,45 +2,91 @@ import React, { Component } from "react";
 import styled from "styled-components";
 import { ProductConsumer } from "../context";
 import axios from "axios";
+import {
+  Button,
+  // Form,
+  // FormGroup,
+  // Input,
+  // Label,
+  Modal,
+  ModalHeader,
+  ModalBody,
+  ModalFooter
+  // FormFeedback
+} from "reactstrap";
 //import { Link } from "react-router-dom";
 
 export default class Form extends Component {
   state = {
     command: "cc:sale",
-    amount: 0,
-    tax: 0,
-    tip: 0,
-    cardHolder: "",
-    number: "",
-    expiration: "",
-    cvc: "",
-    avsStreet: "",
-    avsZip: "",
-    invoice: 2356
+    amount: 65.95,
+    amount_detail: {
+      tax: 6.0,
+      tip: 0.0
+    },
+    creditcard: {
+      cardholder: "",
+      number: "",
+      expiration: "",
+      cvc: "",
+      avs_street: "",
+      avs_zip: ""
+    },
+    invoice: 2356,
+    showModal: false,
+    result: "",
+    authcode: "",
+    invoiceResult: "",
+    charge: "",
+    cardnum: "",
+    refnum: "",
+    status: "",
+    type: ""
   };
 
-  formPost = e => {
+  formPost = () => {
     // const { cartTotal, cartTax, detailProduct } = value;
-    // const { amountDetail } = this.state;
+    //const { amount_detail, creditcard } = this.state;
 
     axios
       .post("/api/transact", {
         command: this.state.command,
         amount: this.state.amount,
-        tax: this.state.tax,
-        tip: this.state.tip,
-        cardHolder: this.state.cardHolder,
-        number: this.state.number,
-        expiration: this.state.expiration,
-        cvc: this.state.cvc,
-        avsStreet: this.state.avsStreet,
-        avsZip: this.state.avsZip,
+        amount_detail: {
+          tax: this.state.amount_detail.tax,
+          tip: this.state.amount_detail.tip
+        },
+        creditcard: {
+          cardholder: this.state.cardholder,
+          number: this.state.number,
+          expiration: this.state.expiration,
+          cvc: this.state.cvc,
+          avs_street: this.state.avs_street,
+          avs_zip: this.state.avs_zip
+        },
         invoice: this.state.invoice
       })
       .then(response => {
         console.log(response);
+        this.toggle();
+        this.setState({
+          result: response.data.Item.result,
+          invoiceResult: response.data.Item.invoice,
+          authcode: response.data.Item.authcode,
+          charge: response.data.Item.auth_amount,
+          cardnum: response.data.Item.number,
+          refnum: response.data.Item.refnum,
+          status: response.data.Item.result,
+          type: response.data.Item.trantype
+        });
         // NotificationManager.success("Success!", "Reward Created");
       });
+  };
+
+  toggle = () => {
+    this.setState({
+      showModal: !this.state.showModal
+    });
   };
 
   updateRoleInput = e => {
@@ -53,11 +99,16 @@ export default class Form extends Component {
   };
 
   render() {
+    const showModal = !this.state.showModal;
+    const result = this.state.result;
+    const authcode = this.state.authcode;
+    const invoiceResult = this.state.invoiceResult;
+    const { refnum, cardnum, status, type, charge } = this.state;
+
     return (
       <ProductConsumer>
         {value => {
           const { cartTotal, detailProduct } = value;
-          console.log(detailProduct);
 
           return (
             <FormContainer>
@@ -78,18 +129,29 @@ export default class Form extends Component {
                       />{" "}
                       {/* <h6>Price: ${detailProduct.price}</h6> */}
                       {/* <h6> Tax: ${cartTax}</h6> */}
-                      <h6 value={cartTotal}> Cart Total: ${cartTotal}</h6>
-                      <form>
+                      <div />
+                      Cart Total:
+                      <input
+                        type="text"
+                        name="amount"
+                        className="form-control"
+                        readOnly
+                        value={this.state.amount}
+                        onChange={e => {
+                          this.updateRoleInput(e);
+                        }}
+                      />
+                      <form action="" autoComplete="false">
                         <br />
                         <br />
-                        <h5>Credit Card Information</h5>
+                        <h5>Payment Information</h5>
                         <div className="form-group">
                           <label>Card Holder Name</label>
                           <input
                             type="text"
                             // value={this.state.creditCard.cardHolder}
-                            value={this.state.cardHolder}
-                            name="cardName"
+                            value={this.state.cardholder}
+                            name="cardholder"
                             className="form-control"
                             placeholder="Enter Name on Credit Card"
                             onChange={e => {
@@ -103,7 +165,8 @@ export default class Form extends Component {
                           <input
                             type="text"
                             value={this.state.number}
-                            name="cardNumber"
+                            autoComplete="false"
+                            name="number"
                             className="form-control"
                             placeholder="Enter Credit Card Number"
                             onChange={e => {
@@ -116,8 +179,9 @@ export default class Form extends Component {
                           <label>Card Expiration</label>
                           <input
                             type="text"
+                            autoComplete="false"
                             value={this.state.expiration}
-                            name="cardExpire"
+                            name="expiration"
                             className="form-control"
                             placeholder="Enter Expiration - MMYY"
                             onChange={e => {
@@ -144,8 +208,8 @@ export default class Form extends Component {
                           <label>AVS Street</label>
                           <input
                             type="text"
-                            name="avsStreet"
-                            value={this.state.avsStreet}
+                            name="avs_street"
+                            value={this.state.avs_street}
                             className="form-control"
                             placeholder="Enter AVS Street"
                             onChange={e => {
@@ -158,8 +222,8 @@ export default class Form extends Component {
                           <label>AVS Zip</label>
                           <input
                             type="text"
-                            value={this.state.avsZip}
-                            name="avsZip"
+                            value={this.state.avs_zip}
+                            name="avs_zip"
                             className="form-control"
                             placeholder="Enter AVS Zip Code"
                             onChange={e => {
@@ -170,9 +234,9 @@ export default class Form extends Component {
                         </div>
 
                         <button
-                          type="submit"
+                          type="button"
                           className="btn btn-primary"
-                          onClick={this.formPost()}
+                          onClick={this.formPost}
                         >
                           Submit
                         </button>
@@ -181,6 +245,45 @@ export default class Form extends Component {
                   </div>
                 </div>
               </div>
+
+              {!showModal ? (
+                <>
+                  <Modal
+                    isOpen={this.state.showModal}
+                    toggle={this.toggle}
+                    className={this.props.className}
+                  >
+                    <ModalHeader toggle={this.toggle}>
+                      Transaction {result}!
+                    </ModalHeader>
+                    <ModalBody>Authorization Code: {authcode}?</ModalBody>
+                    <ModalBody>Invoice Number: {invoiceResult}</ModalBody>
+                    <br />
+                    <ModalHeader>Transaction Details</ModalHeader>
+
+                    <ModalBody>
+                      <div>
+                        <h5>Amount Charged: {charge}</h5>
+                        <h5>Credit Card Number: {cardnum}</h5>
+                        <h5>Reference Number: {refnum}</h5>
+                        <h5>Transaction Status: {status}</h5>
+                        <h5>Transaction Type: {type}</h5>
+                        <h5>Transaction Date: {Date.now()}</h5>
+                      </div>
+                    </ModalBody>
+                    <ModalFooter>
+                      <Button color="danger" onClick={this.toggle}>
+                        {"  "}
+                        Close
+                      </Button>
+                    </ModalFooter>
+                  </Modal>
+                </>
+              ) : (
+                <div>
+                  <p />
+                </div>
+              )}
             </FormContainer>
           );
         }}
